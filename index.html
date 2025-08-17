@@ -4,138 +4,224 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>離婚協議書 自動作成（ひな型準拠・書式版 v2）</title>
+  <title>離婚協議書ジェネレーター</title>
   <style>
-    :root { --brand:#1e40af; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; }
-    * { box-sizing:border-box; }
-    body { font-family: "Noto Sans JP", system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-           color:var(--ink); margin:0; background:#fff; line-height:1.8; }
-    header { padding:16px 20px; border-bottom:1px solid var(--line); }
-    .brand { font-weight:700; }
-    .wrap { max-width:980px; margin:0 auto; padding:16px; display:grid; gap:16px; }
-    .hero { background:#f8fafc; padding:16px; border-radius:14px; }
-    .grid2 { display:grid; gap:16px; }
-    @media (min-width: 900px) { .grid2 { grid-template-columns: 1fr 1fr; } }
-    fieldset { border:1px solid var(--line); border-radius:14px; padding:14px; }
-    legend { font-weight:700; padding: 0 6px; }
-    label { display:block; font-size:12px; margin:8px 0 4px; }
-    input, select, textarea { width:100%; padding:10px 12px; font-size:14px; border:1px solid #cbd5e1; border-radius:10px; background:#fff; }
-    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .actions { display:flex; gap:10px; flex-wrap:wrap; }
-    button { appearance:none; border:none; cursor:pointer; background:var(--brand); color:#fff; padding:10px 16px; border-radius:999px; font-weight:700; }
-    button.secondary { background:#334155; }
-    .muted { color:var(--muted); font-size:12px; }
+    :root {
+      --bg: #fafafa;
+      --panel: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --brand: #6c7ae0;          /* ラベンダー系 */
+      --brand-soft: #eef0ff;     /* ごく薄いラベンダー */
+      --accent: #84dcc6;         /* 淡いミント */
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Noto Sans JP", system-ui, -apple-system, Segoe UI, Roboto, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+      color: var(--ink);
+      margin: 0;
+      background: radial-gradient(1200px 800px at 10% -10%, #f7f7ff, transparent),
+                  radial-gradient(1000px 700px at 90% 0%, #f4fffb, transparent),
+                  var(--bg);
+      line-height: 1.8;
+    }
+    header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff80, #ffffff), #fff;
+      backdrop-filter: blur(6px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 22px 16px 40px;
+      display: grid;
+      gap: 18px;
+    }
+    .intro {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 6px 24px rgba(17, 24, 39, 0.04);
+    }
+    .intro h1 {
+      margin: 0 0 6px;
+      text-align: center;
+      font-size: 20px;
+      letter-spacing: 0.05em;
+    }
+    .intro p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      text-align: center;
+    }
+    .grid2 { display: grid; gap: 16px; }
+    @media (min-width: 960px) { .grid2 { grid-template-columns: 1fr 1fr; } }
 
-    /* Document styles for PDF */
-    .doc { width:100%; max-width:700px; margin:0 auto; padding:22px 18px; background:#fff; border:1px solid var(--line); border-radius:12px; }
+    fieldset {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+      background: var(--panel);
+      box-shadow: 0 6px 24px rgba(17, 24, 39, 0.04);
+    }
+    legend {
+      font-weight: 700;
+      padding: 0 8px;
+      color: #334155;
+    }
+    label { display:block; font-size:12px; margin:10px 0 4px; color:#334155; }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 14px;
+      border: 1px solid #d4d8e8;
+      border-radius: 12px;
+      background: #fff;
+      outline: none;
+      transition: box-shadow .15s, border-color .15s;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 4px var(--brand-soft);
+    }
+    .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .btns { display:flex; gap:10px; flex-wrap:wrap; }
+    button {
+      appearance: none; border: none; cursor: pointer;
+      background: var(--brand);
+      color: #fff; padding: 10px 16px;
+      border-radius: 999px; font-weight: 700;
+      box-shadow: 0 6px 16px rgba(108, 122, 224, 0.25);
+      transition: transform .08s ease, filter .2s ease;
+    }
+    button:hover { filter: brightness(1.05); }
+    button:active { transform: translateY(1px); }
+    button.secondary { background:#334155; box-shadow:none; }
+    .muted { color: var(--muted); font-size: 12px; }
+
+    /* Child cards */
+    .child-card {
+      border: 1px dashed #cbd5e1;
+      background: #fff;
+      padding: 12px;
+      border-radius: 12px;
+      margin: 8px 0;
+    }
+    .child-card .row3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .btnline { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+
+    /* Document preview styles */
+    .doc {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: 0 12px 28px rgba(17, 24, 39, 0.06);
+    }
     .doc h1.title { text-align:center; font-size:20px; letter-spacing:0.08em; margin:6px 0 16px; }
     .doc, .doc div, .doc p, .doc li { font-size:12px; }
     .lead { margin-bottom:14px; }
-    .clause { margin:10px 0 12px; }
-    .clause h3 { font-size:12px; font-weight:700; margin:0 0 4px; }
+    .clause { margin: 10px 0 12px; }
+    .clause h3 { font-size:12px; font-weight:700; margin:0 0 6px; }
     .ol { margin:0; padding-left:1.2em; }
-    .signature { margin-top:24px; }
-    .sigline { margin:12px 0; }
+    .signature { margin-top: 24px; }
+    .sigline { margin: 12px 0; }
     .sigline .label { display:inline-block; width:40px; }
-    .footnote { margin-top: 14px; font-size: 11px; color: var(--muted); border-top:1px solid var(--line); padding-top:8px; }
-    .datebox { margin-top:16px; margin-bottom:8px; }
+    .datebox { margin-top: 16px; margin-bottom: 8px; }
     .uline { display:inline-block; min-width:9em; border-bottom:1px solid #94a3b8; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">離婚協議書ジェネレーター（ひな型準拠）</div>
-  </header>
-
-  <div class="wrap grid2">
-    <section class="hero">
-      <h2 style="margin:0 0 6px;">書式版 v2</h2>
-      <div class="muted">・特別費はデフォルト「入れない」／・署名欄の上に日付の空欄／・署名欄の下に住所欄を追加。<br>PDFはプレビューの見た目をそのまま出力します。</div>
+  <header></header>
+  <main class="wrap">
+    <section class="intro">
+      <h1>離婚協議書ジェネレーター</h1>
+      <p>
+        以下の項目を入力することで、離婚協議書の下書きを自動作成できます。<br>
+        プレビューで内容を確認したあと、「PDFを作成」を押すと、そのままPDFをダウンロードできます。<br>
+        作成される内容はあくまで一般的な形式にとどまります。より安心してご利用いただくために、<br>
+        チェックや調整をご希望の場合は、どうぞ弁護士にご相談ください。
+      </p>
     </section>
 
-    <form id="form" class="grid2">
-      <fieldset>
-        <legend>基本情報</legend>
-        <label>甲（あなた）氏名</label>
-        <input id="aName" placeholder="例：山田 太郎" />
-        <label>乙（相手）氏名</label>
-        <input id="bName" placeholder="例：山田 花子" />
-        <label>離婚届の提出者</label>
-        <select id="submitter">
-          <option value="甲">甲</option>
-          <option value="乙">乙</option>
-        </select>
-      </fieldset>
-
-      <fieldset>
-        <legend>お子さん</legend>
-        <label>子の有無</label>
-        <select id="hasChild">
-          <option value="no" selected>いない</option>
-          <option value="yes">いる</option>
-        </select>
-        <div id="childBlock" style="display:none;">
-          <label>子の氏名</label>
-          <input id="childName" placeholder="例：山田 花" />
-          <div class="row">
-            <div>
-              <label>生年月日（子）</label>
-              <input id="childDob" type="date" />
-            </div>
-            <div>
-              <label>親権者</label>
-              <select id="custody">
-                <option value="甲">甲</option>
-                <option value="乙">乙</option>
-              </select>
-            </div>
-          </div>
-          <div class="row">
-            <div>
-              <label>養育費（月額・円）</label>
-              <input id="childSupport" type="number" min="0" step="1000" placeholder="70000" />
-            </div>
-            <div>
-              <label>支払日（毎月）</label>
-              <input id="payday" type="number" min="1" max="31" placeholder="末日=31等" />
-            </div>
-          </div>
-          <label>特別費（病気・事故・進学等が必要な場合の協議文言）</label>
-          <select id="specialCost">
-            <option value="no" selected>入れない</option>
-            <option value="yes">入れる</option>
+    <section class="grid2">
+      <form id="form" class="grid2">
+        <fieldset>
+          <legend>基本情報</legend>
+          <label>甲（あなた）氏名</label>
+          <input id="aName" placeholder="例：山田 太郎" />
+          <label>乙（相手）氏名</label>
+          <input id="bName" placeholder="例：山田 花子" />
+          <label>離婚届の提出者</label>
+          <select id="submitter">
+            <option value="甲">甲</option>
+            <option value="乙">乙</option>
           </select>
-          <label>面会交流（例：毎月1回程度。方法・日時は協議）</label>
-          <input id="visitation" placeholder="毎月1回程度。方法・日時は協議のうえ定める。" />
+        </fieldset>
+
+        <fieldset>
+          <legend>お子さん</legend>
+          <label>子の有無</label>
+          <select id="hasChild">
+            <option value="no" selected>いない</option>
+            <option value="yes">いる</option>
+          </select>
+
+          <div id="childrenWrap" style="display:none;">
+            <div class="muted">※ 子を追加してください（各子の親権者を指定できます）</div>
+            <div id="childrenList"></div>
+            <div class="btnline">
+              <button type="button" id="addChild" style="background:var(--accent); color:#064e3b;">＋ 子を追加</button>
+            </div>
+            <div class="row">
+              <div>
+                <label>養育費（月額・円）</label>
+                <input id="childSupport" type="number" min="0" step="1000" placeholder="70000" />
+              </div>
+              <div>
+                <label>支払日（毎月）</label>
+                <input id="payday" type="number" min="1" max="31" placeholder="末日=31等" />
+              </div>
+            </div>
+            <label>特別費（病気・事故・進学等が必要な場合の協議文言）</label>
+            <select id="specialCost">
+              <option value="no" selected>入れない</option>
+              <option value="yes">入れる</option>
+            </select>
+            <label>面会交流（例：毎月1回程度。方法・日時は協議）</label>
+            <input id="visitation" placeholder="毎月1回程度。方法・日時は協議のうえ定める。" />
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>金銭・その他</legend>
+          <label>財産分与（任意）</label>
+          <input id="division" placeholder="例：乙は甲に金◯◯万円を令和◯年◯月末日限りで支払う" />
+          <label>慰謝料（任意）</label>
+          <input id="alimony" placeholder="例：なし／金◯◯万円を令和◯年◯月末日限りで支払う" />
+        </fieldset>
+
+        <div class="btns">
+          <button type="button" id="btnPreview">プレビュー</button>
+          <button type="button" id="btnPdf" class="secondary">PDFを作成</button>
         </div>
-      </fieldset>
+        <div class="muted">※ 年金分割は0.5で固定。公正証書条項は含みません。</div>
+      </form>
 
-      <fieldset>
-        <legend>金銭・その他</legend>
-        <label>財産分与（任意）</label>
-        <input id="division" placeholder="例：乙は甲に金◯◯万円を令和◯年◯月末日限りで支払う" />
-        <label>慰謝料（任意）</label>
-        <input id="alimony" placeholder="例：なし／金◯◯万円を令和◯年◯月末日限りで支払う" />
-      </fieldset>
-
-      <div class="actions">
-        <button type="button" id="btnPreview">プレビュー</button>
-        <button type="button" id="btnPdf" class="secondary">PDFを作成</button>
-      </div>
-      <div class="muted">※ 公正証書の条項は本版では入れていません。年金分割は0.5で固定。</div>
-    </form>
-
-    <section>
-      <h3 style="margin:0;">プレビュー</h3>
-      <div id="preview" class="doc" aria-live="polite">
-        <div class="muted">ここに協議書のプレビューが表示されます。</div>
-      </div>
+      <section>
+        <div id="preview" class="doc" aria-live="polite">
+          <div class="muted">ここに協議書のプレビューが表示されます。</div>
+        </div>
+      </section>
     </section>
-  </div>
-
-  <footer style="text-align:center; padding:18px; color:var(--muted);">
-    ※ 本ツールは雛形生成であり、個別事情に応じた法的助言ではありません。
-  </footer>
+  </main>
 
   <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -148,71 +234,108 @@
       return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
     };
 
+    // Children form helpers
+    function childCard(index) {
+      const i = index;
+      return `<div class="child-card" data-index="${i}">
+        <div class="row3">
+          <div>
+            <label>氏名</label>
+            <input class="c-name" placeholder="例：山田 花（${i+1}人目）">
+          </div>
+          <div>
+            <label>生年月日</label>
+            <input class="c-dob" type="date">
+          </div>
+          <div>
+            <label>親権者</label>
+            <select class="c-custody">
+              <option value="甲">甲</option>
+              <option value="乙">乙</option>
+            </select>
+          </div>
+        </div>
+        <div class="btnline">
+          <button type="button" class="removeChild" style="background:#f1f5f9; color:#334155;">− この子を削除</button>
+        </div>
+      </div>`;
+    }
+
+    function getChildren() {
+      const list = [];
+      document.querySelectorAll('#childrenList .child-card').forEach(card => {
+        const name = card.querySelector('.c-name').value.trim();
+        const dob = card.querySelector('.c-dob').value;
+        const custody = card.querySelector('.c-custody').value;
+        if (name) list.push({ name, dob: fmtDate(dob), custody });
+      });
+      return list;
+    }
+
     function buildHtml() {
       const A = el('aName').value.trim();
       const B = el('bName').value.trim();
       const submitter = el('submitter').value;
       const hasChild = el('hasChild').value === 'yes';
+      const children = hasChild ? getChildren() : [];
 
+      let art = 1; // dynamic article numbering
       let html = `<h1 class="title">離婚協議書</h1>`;
       html += `<div class="lead">（以下、「甲」という。）${A ? A : '（氏名）'} と（以下、「乙」という。）${B ? B : '（氏名）'} は、甲と乙との間の離婚について、以下のとおり、合意をした。</div>`;
 
-      // 第1条
-      html += `<div class="clause"><h3>第1条（離婚の合意）</h3>`;
-      if (hasChild) {
-        const childName = el('childName').value.trim() || '（子の氏名）';
-        const childDob = fmtDate(el('childDob').value);
-        const custody = el('custody').value;
-        html += `<div>甲と乙は、${childName}${childDob ? `（${childDob}生）` : ''}（以下「丙」という。）の親権者を${custody}と定め、${custody}において丙を監護養育することとし、協議離婚（以下「本件離婚」という。）すること、及び離婚届の提出は${submitter}において速やかに行うことに合意した。</div>`;
+      // 第1条（離婚の合意）
+      html += `<div class="clause"><h3>第${art}条（離婚の合意）</h3>`;
+      if (children.length > 0) {
+        const lines = children.map(c => `${c.name}${c.dob ? `（${c.dob}生）` : ''}の親権者を${c.custody}と定め、${c.custody}において監護養育する`);
+        html += `<div>甲と乙は、${lines.join('。')}こととし、協議離婚（以下「本件離婚」という。）すること、及び離婚届の提出は${submitter}において速やかに行うことに合意した。</div>`;
       } else {
         html += `<div>甲と乙は、協議離婚（以下「本件離婚」という。）すること、及び離婚届の提出は${submitter}において速やかに行うことに合意した。</div>`;
       }
       html += `</div>`;
+      art++;
 
-      // 第2条（養育費）
-      if (hasChild) {
+      // 養育費（子がいる場合のみ）
+      if (children.length > 0) {
         const support = Number(el('childSupport').value || 0);
         const payday = Number(el('payday').value || 0);
         const specialCost = el('specialCost').value === 'yes';
-        html += `<div class="clause"><h3>第2条（養育費）</h3><ol class="ol">`;
-        html += `<li>甲は、丙の養育費として、月額${support ? support.toLocaleString() : '（金額）'}円を、毎月${payday || '末日'}日限り、乙の指定する口座へ振込送金により支払う。振込手数料は甲の負担とする。</li>`;
+        html += `<div class="clause"><h3>第${art}条（養育費）</h3><ol class="ol">`;
+        html += `<li>甲は、子らの養育費として、月額${support ? support.toLocaleString() : '（金額）'}円を、毎月${payday || '末日'}日限り、乙の指定する口座へ振込送金により支払う。振込手数料は甲の負担とする。</li>`;
         if (specialCost) {
-          html += `<li>甲乙は、前項の金員のほか、丙のために、病気、事故、進学その他特別の出費が必要となった場合には、別途誠実に協議するものとする。</li>`;
+          html += `<li>甲乙は、前項の金員のほか、子らのために、病気、事故、進学その他特別の出費が必要となった場合には、別途誠実に協議するものとする。</li>`;
         }
         html += `</ol></div>`;
+        art++;
       }
 
-      // 第3条（育児協力）
-      html += `<div class="clause"><h3>第3条（育児協力）</h3><div>甲は、乙が希望した際には、丙の育児に協力する。</div></div>`;
-
-      // 第4条（財産分与）
+      // 財産分与
       const division = el('division').value.trim();
       if (division) {
-        html += `<div class="clause"><h3>第4条（財産分与）</h3><div>甲は、乙に対し、財産分与として ${division}。</div></div>`;
+        html += `<div class="clause"><h3>第${art}条（財産分与）</h3><div>甲は、乙に対し、財産分与として ${division}。</div></div>`;
+        art++;
       }
 
-      // 第5条（面会交流）
-      if (hasChild) {
+      // 面会交流（子がいる場合のみ）
+      if (children.length > 0) {
         const visitation = el('visitation').value.trim();
-        html += `<div class="clause"><h3>第5条（面会交流）</h3>`;
+        html += `<div class="clause"><h3>第${art}条（面会交流）</h3>`;
         if (visitation) {
-          html += `<ol class="ol"><li>乙は、甲に対し、丙が丙と毎月1回程度面会交流することを認める。</li><li>面会の具体的日時、場所、方法等は、丙の福祉を尊重して、協議して定める（例：${visitation}）。</li></ol>`;
+          html += `<ol class="ol"><li>乙は、甲に対し、子らが両親と毎月1回程度面会交流することを認める。</li><li>面会の具体的日時、場所、方法等は、子らの福祉を尊重して、協議して定める（例：${visitation}）。</li></ol>`;
         } else {
-          html += `<div>面会交流の具体的な日時、場所、方法等は、丙の福祉を尊重して、協議して定める。</div>`;
+          html += `<div>面会交流の具体的な日時、場所、方法等は、子らの福祉を尊重して、協議して定める。</div>`;
         }
         html += `</div>`;
+        art++;
       }
 
-      // 第6条（年金分割）固定0.5
-      html += `<div class="clause"><h3>第6条（年金分割）</h3><div>甲乙は、本日、厚生労働大臣に対し、当事者間の情報提供請求の下、厚生年金制度に係る対象期間の標準報酬等の改定または決定の請求をすること及び請求すべき按分割合を<strong>0.5</strong>とする旨合意した。</div></div>`;
+      // 年金分割 0.5
+      html += `<div class="clause"><h3>第${art}条（年金分割）</h3><div>甲乙は、厚生年金制度に係る対象期間の標準報酬等の改定または決定の請求をすること及び請求すべき按分割合を<strong>0.5</strong>とする旨合意した。</div></div>`;
+      art++;
 
-      // 第7条（届出等）
-      html += `<div class="clause"><h3>第7条（届出等）</h3><div>乙は、離婚届提出後速やかに、前条に関する所要の手続を行う。</div></div>`;
+      // 清算条項
+      html += `<div class="clause"><h3>第${art}条（清算条項）</h3><div>甲及び乙は、本件離婚に関し、以上をもってすべて解決したものとし、今後、名目のいかんを問わず、互いに何らの財産上の請求をしない。また、甲及び乙は、本書に定めるほか、何らの債権債務のないことを相互に確認する。</div></div>`;
 
-      // 第8条（清算条項）
-      html += `<div class="clause"><h3>第8条（清算条項）</h3><div>甲及び乙は、本件離婚に関し、以上をもってすべて解決したものとし、今後、名目のいかんを問わず、互いに何らの財産上の請求をしない。また、甲及び乙は、本書に定めるほか、何らの債権債務のないことを相互に確認する。</div></div>`;
-
-      // 空欄の日付 + 署名欄 + 住所欄
+      // 日付・署名・住所
       html += `<div class="datebox">日付：<span class="uline">&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;</span> 年 <span class="uline" style="min-width:5em;"></span> 月 <span class="uline" style="min-width:5em;"></span> 日</div>`;
       html += `<div class="signature">`;
       html += `<div class="sigline"><span class="label">（甲）</span>氏名　${A || '　　　　'}　印</div>`;
@@ -220,8 +343,6 @@
       html += `<div class="sigline"><span class="label">（乙）</span>氏名　${B || '　　　　'}　印</div>`;
       html += `<div class="sigline"><span class="label"></span>住所　<span class="uline" style="min-width:20em;"></span></div>`;
       html += `</div>`;
-
-      html += `<div class="footnote">※ 本書は自動生成されたひな形です。個別事情により修正が必要です。弁護士による最終確認をおすすめします。</div>`;
 
       return html;
     }
@@ -263,12 +384,24 @@
       pdf.save(fname);
     }
 
-    // UI
+    // UI bindings
     el('hasChild').addEventListener('change', e => {
-      el('childBlock').style.display = e.target.value === 'yes' ? 'block' : 'none';
+      const show = e.target.value === 'yes';
+      el('childrenWrap').style.display = show ? 'block' : 'none';
     });
-    el('btnPreview').addEventListener('click', updatePreview);
-    el('btnPdf').addEventListener('click', toPDF);
+    document.getElementById('addChild').addEventListener('click', () => {
+      const list = document.getElementById('childrenList');
+      const idx = list.children.length;
+      const div = document.createElement('div');
+      div.innerHTML = childCard(idx);
+      const card = div.firstElementChild;
+      list.appendChild(card);
+      card.querySelector('.removeChild').addEventListener('click', () => {
+        card.remove();
+      });
+    });
+    document.getElementById('btnPreview').addEventListener('click', updatePreview);
+    document.getElementById('btnPdf').addEventListener('click', toPDF);
   </script>
 </body>
 </html>
