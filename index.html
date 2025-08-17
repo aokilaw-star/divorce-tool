@@ -179,6 +179,10 @@
       if (!y || !m) return ym;
       return `${y}年${m}月`
     };
+    const paydayText = () => {
+      const v = el('payday').value;
+      return v === '末日' ? '毎月末日限り' : `毎月${v}日限り`;
+    };
 
     function childCard(index) {
       const i = index;
@@ -259,10 +263,6 @@
     function payorFor(custody) { return custody === '甲' ? '乙' : '甲'; }
     function circledNum(n) { const base = '①②③④⑤⑥⑦⑧⑨⑩'; return n>=1 && n<=10 ? base[n-1] : `${n}.`; }
     function displayChild(c) { return `${c.rel ? c.rel + ' ' : ''}${c.name}`; }
-    function paydayText() {
-      const v = el('payday').value;
-      return v === '末日' ? '毎月末日限り' : `毎月${v}日限り`;
-    }
 
     function buildHtml() {
       const A = el('aName').value.trim();
@@ -270,6 +270,7 @@
       const submitter = el('submitter').value;
       const hasChild = el('hasChild').value === 'yes';
       const children = hasChild ? getChildren() : [];
+      const payPhrase = paydayText();
 
       let art = 1;
       let html = `<h1 class="title">離婚協議書</h1>`;
@@ -289,28 +290,28 @@
       // 養育費
       if (children.length > 0) {
         html += `<div class="clause"><h3>第${art}条（養育費）</h3>`;
-        const names = children.map(c => displayChild(c)).join('及び');
-        const payPhrase = paydayText();
-
         if (children.length === 1) {
           const c = children[0];
           const feePayer = payorFor(c.custody);
-          html += `<div>甲は、乙に対し、${names}の養育費として、次のとおり、${payPhrase}、乙の指定する口座に振り込む方法で支払う。<br>ただし、この振込手数料は${feePayer}の負担とする。</div>`;
-        } else {
-          html += `<div>甲は、乙に対し、${names}の養育費として、次のとおり、${payPhrase}、乙の指定する口座に振り込む方法で支払う。</div>`;
-        }
-
-        html += `<ol class="ol">`;
-        children.forEach((c, idx) => {
-          const num = circledNum(idx+1);
           const amount = c.support ? `${c.support.toLocaleString()}円` : `（金額）`;
           const startTxt = c.start ? `${c.start}から` : `（開始年月）から`;
           const untilTxt = untilText(c.until);
-          const payor = payorFor(c.custody);
-          const feeTail = (children.length === 1) ? '' : `（この振込手数料は${payor}の負担とする。）`;
-          html += `<li>${num} ${displayChild(c)} につき、${startTxt}${untilTxt}月額 ${amount}${feeTail}</li>`;
-        });
-        html += `</ol></div>`;
+          html += `<div>甲は、乙に対し、${displayChild(c)}${c.dob ? `（${c.dob}生）` : ''}の養育費として、${startTxt}${untilTxt}月額${amount}を、${payPhrase}、乙の指定する口座に振り込む方法で支払う。<br>この振込手数料は${feePayer}の負担とする。</div>`;
+        } else {
+          const names = children.map(c => displayChild(c)).join('及び');
+          html += `<div>甲は、乙に対し、${names}の養育費として、次のとおり、${payPhrase}、乙の指定する口座に振り込む方法で支払う。</div>`;
+          html += `<ol class="ol">`;
+          children.forEach((c, idx) => {
+            const num = circledNum(idx+1);
+            const amount = c.support ? `${c.support.toLocaleString()}円` : `（金額）`;
+            const startTxt = c.start ? `${c.start}から` : `（開始年月）から`;
+            const untilTxt = untilText(c.until);
+            const payor = payorFor(c.custody);
+            html += `<li>${num} ${displayChild(c)}${c.dob ? `（${c.dob}生）` : ''} につき、${startTxt}${untilTxt}月額 ${amount}（この振込手数料は${payor}の負担とする。）</li>`;
+          });
+          html += `</ol>`;
+        }
+        html += `</div>`;
         art++;
       }
 
