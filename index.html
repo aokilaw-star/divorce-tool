@@ -135,8 +135,39 @@
               <option value="no" selected>入れない</option>
               <option value="yes">入れる</option>
             </select>
-            <label>面会交流（例：毎月1回程度。方法・日時は協議）</label>
-            <input id="visitation" placeholder="毎月1回程度。方法・日時は協議のうえ定める。" />
+
+            <label>面会交流</label>
+            <select id="visitationMode">
+              <option value="general" selected>未定（協議で定める）</option>
+              <option value="specific">具体的に定める</option>
+            </select>
+
+            <div id="visitationSpecific" style="display:none; border:1px dashed #cbd5e1; padding:10px; border-radius:10px; margin-top:8px;">
+              <div class="row">
+                <div>
+                  <label>頻度（例：「毎月 第2日曜日」「月2回」など）</label>
+                  <input id="vFreq" placeholder="例：毎月 第2日曜日" />
+                </div>
+                <div>
+                  <label>場所</label>
+                  <input id="vPlace" placeholder="例：〇〇駅改札口付近" />
+                </div>
+              </div>
+              <div class="row">
+                <div>
+                  <label>開始時刻（24h）</label>
+                  <input id="vStart" type="time" />
+                </div>
+                <div>
+                  <label>終了時刻（24h）</label>
+                  <input id="vEnd" type="time" />
+                </div>
+              </div>
+              <label>方法（移動・引渡し等）</label>
+              <input id="vMethod" placeholder="例：甲が子を引き取り、活動後同駅で返還する" />
+              <label>例外条項（任意）</label>
+              <input id="vExceptions" placeholder="例：学校行事等やむを得ない事情がある場合は当事者間で日時変更できる" />
+            </div>
           </div>
         </fieldset>
 
@@ -264,6 +295,42 @@
     function circledNum(n) { const base = '①②③④⑤⑥⑦⑧⑨⑩'; return n>=1 && n<=10 ? base[n-1] : `${n}.`; }
     function displayChild(c) { return `${c.rel ? c.rel + ' ' : ''}${c.name}`; }
 
+    function buildVisitationClause(children) {
+      const mode = el('visitationMode').value;
+      if (children.length === 0) return ''; // no visitation clause if no children
+      let html = `<div class="clause"><h3>第__ART__条（面会交流）</h3>`;
+      if (mode === 'general') {
+        html += `<div>面会交流の具体的な日時、場所、方法等は、子らの福祉を尊重して、協議して定める。</div>`;
+      } else {
+        const freq = (el('vFreq').value || '').trim();
+        const place = (el('vPlace').value || '').trim();
+        const start = (el('vStart').value || '').trim();
+        const end = (el('vEnd').value || '').trim();
+        const method = (el('vMethod').value || '').trim();
+        const ex = (el('vExceptions').value || '').trim();
+
+        const items = [];
+        if (freq) items.push(`頻度：${freq}`);
+        if (start || end) items.push(`時間：${start || '（開始）'} から ${end || '（終了）'} まで`);
+        if (place) items.push(`場所：${place}`);
+        if (method) items.push(`方法：${method}`);
+
+        html += `<div>乙は、甲に対し、子との面会交流を、原則として次の要領で実施することを認める。</div>`;
+        if (items.length > 0) {
+          html += `<ol class="ol">`;
+          items.forEach((t, i) => { html += `<li>${circledNum(i+1)} ${t}</li>`; });
+          html += `</ol>`;
+        }
+        if (ex) {
+          html += `<div>${ex}</div>`;
+        } else {
+          html += `<div>子の学校行事その他やむを得ない事情がある場合は、甲乙間で協議のうえ、日時等を変更できる。</div>`;
+        }
+      }
+      html += `</div>`;
+      return html;
+    }
+
     function buildHtml() {
       const A = el('aName').value.trim();
       const B = el('bName').value.trim();
@@ -315,23 +382,20 @@
         art++;
       }
 
+      // 面会交流（子がいる場合のみ）
+      if (children.length > 0) {
+        let vis = buildVisitationClause(children);
+        if (vis) {
+          vis = vis.replace('第__ART__条', `第${art}条`);
+          html += vis;
+          art++;
+        }
+      }
+
       // 財産分与
       const division = (el('division').value || '').trim();
       if (division) {
         html += `<div class="clause"><h3>第${art}条（財産分与）</h3><div>甲は、乙に対し、財産分与として ${division}。</div></div>`;
-        art++;
-      }
-
-      // 面会交流（子がいる場合のみ）
-      if (children.length > 0) {
-        const visitation = (el('visitation').value || '').trim();
-        html += `<div class="clause"><h3>第${art}条（面会交流）</h3>`;
-        if (visitation) {
-          html += `<ol class="ol"><li>乙は、甲に対し、子らが両親と毎月1回程度面会交流することを認める。</li><li>面会の具体的日時、場所、方法等は、子らの福祉を尊重して、協議して定める（例：${visitation}）。</li></ol>`;
-        } else {
-          html += `<div>面会交流の具体的な日時、場所、方法等は、子らの福祉を尊重して、協議して定める。</div>`;
-        }
-        html += `</div>`;
         art++;
       }
 
@@ -385,6 +449,7 @@
       pdf.save(fname);
     }
 
+    // UI bindings
     el('hasChild').addEventListener('change', e => { el('childrenWrap').style.display = e.target.value === 'yes' ? 'block' : 'none'; });
     document.getElementById('addChild').addEventListener('click', () => {
       const list = document.getElementById('childrenList');
@@ -392,6 +457,9 @@
       const div = document.createElement('div'); div.innerHTML = childCard(idx);
       const card = div.firstElementChild; list.appendChild(card);
       card.querySelector('.removeChild').addEventListener('click', () => { card.remove(); });
+    });
+    document.getElementById('visitationMode').addEventListener('change', e => {
+      el('visitationSpecific').style.display = e.target.value === 'specific' ? 'block' : 'none';
     });
     document.getElementById('btnPreview').addEventListener('click', updatePreview);
     document.getElementById('btnPdf').addEventListener('click', toPDF);
