@@ -3,295 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>離婚協議書ジェネレーター</title>
+  <title>離婚協議書作成ツール</title>
   <style>
-    body {
-      font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
-      background: #f8f9fa;
-      margin: 0;
-      padding: 0;
-      color: #333;
-    }
-    header {
-      background: #4a6fa5;
-      color: white;
-      padding: 1.2em;
-      text-align: center;
-      font-size: 1.6em;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
-    main {
-      max-width: 850px;
-      margin: 2em auto;
-      background: white;
-      padding: 2em;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h2 {
-      color: #4a6fa5;
-      border-left: 5px solid #4a6fa5;
-      padding-left: 0.5em;
-      margin-top: 1.5em;
-    }
-    label {
-      display: block;
-      margin-top: 1em;
-      font-weight: bold;
-      font-size: 0.95em;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 0.6em;
-      margin-top: 0.4em;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 0.95em;
-      box-sizing: border-box;
-    }
-    textarea {
-      height: 90px;
-    }
-    button {
-      display: inline-block;
-      margin-top: 1.5em;
-      padding: 0.8em 1.6em;
-      font-size: 1em;
-      background: #4a6fa5;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #3a5a86;
-    }
-    #preview {
-      margin-top: 2em;
-      padding: 1.5em;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      background: #fafafa;
-      line-height: 1.6;
-      white-space: pre-wrap;
-    }
-    .note {
-      font-size: 0.85em;
-      color: #555;
-      margin-top: 1em;
-      background: #eef4fa;
-      padding: 1em;
-      border-radius: 6px;
-    }
-    ol {
-      list-style: none;
-      counter-reset: item;
-      padding-left: 0;
-    }
-    ol li {
-      counter-increment: item;
-      margin-bottom: 0.6em;
-    }
-    ol li::before {
-      content: "第" counter(item) "条 ";
-      font-weight: bold;
-      margin-right: 0.5em;
-      color: #4a6fa5;
-    }
+    body { font-family: 'Yu Gothic', sans-serif; margin: 20px; line-height: 1.8; }
+    h1 { color: #2c3e50; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    textarea, input, select { width: 100%; padding: 8px; margin-top: 4px; }
+    button { margin-top: 15px; padding: 10px 20px; background: #2c3e50; color: #fff; border: none; cursor: pointer; }
+    button:hover { background: #34495e; }
+    #preview { margin-top: 30px; padding: 20px; border: 1px solid #ccc; white-space: pre-wrap; }
   </style>
 </head>
 <body>
-  <header>離婚協議書ジェネレーター</header>
-  <main>
-    <p class="note">
-      以下の一般的な項目を入力することで、離婚協議書の簡単な下書きを作成することができます。<br>
-      プレビューでご確認後、「PDFを作成」を選択いただくと、PDFファイルをダウンロードいただけます。<br><br>
-      本ツールは一般的な内容にとどまりますので、チェックや調整をご希望の場合は、<strong>弁護士にご相談いただくことをおすすめいたします。</strong>
-    </p>
+  <h1>離婚協議書作成ツール</h1>
+  <p>必要事項を入力すると、離婚協議書の案文が生成されます。署名・日付・住所欄は印刷後に手書きで記入してください。</p>
 
-    <h2>基本情報</h2>
-    <label>当事者（甲）氏名: <input type="text" id="partyA"></label>
-    <label>当事者（乙）氏名: <input type="text" id="partyB"></label>
-    <label>離婚届提出者: 
-      <select id="submitter">
-        <option value="">選択してください</option>
-        <option value="甲">甲</option>
-        <option value="乙">乙</option>
-      </select>
-    </label>
+  <form id="agreementForm">
+    <label>夫の氏名</label>
+    <input type="text" id="husbandName" required>
 
-    <h2>子ども情報</h2>
-    <div id="children">
-      <div class="child">
-        <label>子の氏名: <input type="text" class="childName"></label>
-        <label>生年月日: <input type="text" class="childBirth" placeholder="例: 令和◯年◯月◯日"></label>
-        <label>続柄: <input type="text" class="childRelation" placeholder="例: 長男, 長女"></label>
-        <label>親権者:
-          <select class="childCustody">
-            <option value="">選択してください</option>
-            <option value="甲">甲</option>
-            <option value="乙">乙</option>
-          </select>
-        </label>
-        <label>養育費（月額）: <input type="number" class="childSupport" placeholder="円"></label>
-        <label>支払終了時期:
-          <select class="supportUntil">
-            <option value="20">20歳まで</option>
-            <option value="22">22歳まで</option>
-          </select>
-        </label>
-      </div>
-    </div>
-    <button type="button" onclick="addChild()">＋ 子どもを追加</button>
+    <label>妻の氏名</label>
+    <input type="text" id="wifeName" required>
 
-    <h2>面会交流</h2>
-    <label>面会交流の取り決め: 
-      <textarea id="visitation" placeholder="例: 月1回、土曜日午前10時から午後5時まで、甲宅にて。"></textarea>
-    </label>
+    <label>子どもの人数</label>
+    <select id="childCount">
+      <option value="0">なし</option>
+      <option value="1">1人</option>
+      <option value="2">2人</option>
+      <option value="3">3人</option>
+    </select>
 
-    <h2>財産分与</h2>
-    <label>財産分与の内容: 
-      <textarea id="propertyDivision"></textarea>
-    </label>
+    <label>子どもの氏名（カンマ区切りで入力してください）</label>
+    <input type="text" id="childrenNames">
 
-    <h2>年金分割</h2>
-    <label>分割割合:
-      <select id="pensionSplit">
-        <option value="0.5">0.5</option>
-        <option value="0.4">0.4</option>
-        <option value="0.6">0.6</option>
-      </select>
-    </label>
+    <label>親権者</label>
+    <select id="custody">
+      <option value="夫">夫</option>
+      <option value="妻">妻</option>
+    </select>
 
-    <h2>署名欄</h2>
-    <p>日付（署名日を記載してください）</p>
-    <label><input type="text" id="signDate" placeholder="令和◯年◯月◯日"></label>
-    <p>署名・住所</p>
-    <label>甲氏名: <input type="text" id="signA"></label>
-    <label>甲住所: <input type="text" id="addrA"></label>
-    <label>乙氏名: <input type="text" id="signB"></label>
-    <label>乙住所: <input type="text" id="addrB"></label>
+    <label>養育費（月額・円）</label>
+    <input type="number" id="supportAmount">
 
-    <button onclick="generateAgreement()">プレビューを作成</button>
-    <div id="preview"></div>
-    <button onclick="downloadPDF()">PDFを作成</button>
-  </main>
+    <label>支払日</label>
+    <select id="payDay">
+      <option value="毎月末日">毎月末日</option>
+      <option value="毎月○日">毎月○日</option>
+    </select>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <label>面会交流</label>
+    <select id="visitation">
+      <option value="未定（協議して定める）">未定（協議して定める）</option>
+      <option value="月1回、宿泊なしで実施">月1回、宿泊なしで実施</option>
+    </select>
+
+    <label>財産分与（自由記載）</label>
+    <textarea id="propertyDivision"></textarea>
+
+    <button type="button" onclick="generateAgreement()">協議書を作成</button>
+  </form>
+
+  <div id="preview"></div>
+
   <script>
-    function addChild() {
-      const container = document.getElementById("children");
-      const div = document.createElement("div");
-      div.classList.add("child");
-      div.innerHTML = document.querySelector(".child").innerHTML;
-      container.appendChild(div);
-    }
-
     function generateAgreement() {
-      const A = document.getElementById("partyA").value;
-      const B = document.getElementById("partyB").value;
-      const submitter = document.getElementById("submitter").value;
-      const children = document.querySelectorAll(".child");
-      let childText = "";
-
-      if (children.length === 1) {
-        const name = children[0].querySelector(".childName").value;
-        const birth = children[0].querySelector(".childBirth").value;
-        const relation = children[0].querySelector(".childRelation").value;
-        const custody = children[0].querySelector(".childCustody").value;
-        const support = children[0].querySelector(".childSupport").value;
-        const until = children[0].querySelector(".supportUntil").value;
-
-        if (name && custody) {
-          let payer = custody === "甲" ? "乙" : "甲";
-          childText = `${payer}は、${custody}に対し、${relation} ${name}（${birth}生）の養育費として、令和◯年◯月から同人が満${until}歳に達する月まで月額${support}円を支払う。この振込手数料は${payer}の負担とする。`;
-        }
-      } else if (children.length > 1) {
-        childText = "";
-        children.forEach((child, idx) => {
-          const name = child.querySelector(".childName").value;
-          const birth = child.querySelector(".childBirth").value;
-          const relation = child.querySelector(".childRelation").value;
-          const custody = child.querySelector(".childCustody").value;
-          const support = child.querySelector(".childSupport").value;
-          const until = child.querySelector(".supportUntil").value;
-
-          if (name && custody) {
-            let payer = custody === "甲" ? "乙" : "甲";
-            childText += `(${idx+1}) ${payer}は、${custody}に対し、${relation} ${name}（${birth}生）の養育費として、令和◯年◯月から同人が満${until}歳に達する月まで月額${support}円を支払う。この振込手数料は${payer}の負担とする。
-`;
-          }
-        });
-      }
-
+      const husband = document.getElementById("husbandName").value;
+      const wife = document.getElementById("wifeName").value;
+      const childCount = parseInt(document.getElementById("childCount").value);
+      const childrenNames = document.getElementById("childrenNames").value.split("、").join(", ");
+      const custody = document.getElementById("custody").value;
+      const support = document.getElementById("supportAmount").value;
+      const payDay = document.getElementById("payDay").value;
       const visitation = document.getElementById("visitation").value;
-      const propertyDivision = document.getElementById("propertyDivision").value;
-      const pensionSplit = document.getElementById("pensionSplit").value;
-      const signDate = document.getElementById("signDate").value;
-      const signA = document.getElementById("signA").value;
-      const addrA = document.getElementById("addrA").value;
-      const signB = document.getElementById("signB").value;
-      const addrB = document.getElementById("addrB").value;
+      const property = document.getElementById("propertyDivision").value;
 
-      let text = `離婚協議書
+      let text = "離婚協議書
 
-`;
-      text += `第1条 （離婚の合意）
-甲${A}と乙${B}は、協議離婚することに合意した。離婚届の提出は${submitter}が行う。
+";
 
-`;
+      text += "第1条（離婚の合意）
+甲（夫 " + husband + "）と乙（妻 " + wife + "）は、協議離婚することに合意した。
 
-      if (childText) {
-        text += `第2条 （親権・養育費）
-${childText}
+";
 
-`;
+      if (childCount > 0) {
+        text += "第2条（親権者）
+";
+        text += "未成年の子 ";
+        text += childrenNames + " の親権者は " + custody + " とする。
+
+";
       }
 
-      if (visitation) {
-        text += `第3条 （面会交流）
-${visitation}
+      if (support) {
+        text += "第3条（養育費）
+";
+        text += custody === "夫" ? "乙" : "甲";
+        text += "は、子の監護費用として、毎月 " + support + " 円を " + payDay + " までに支払う。振込手数料は支払者の負担とする。
 
-`;
+";
       }
 
-      if (propertyDivision) {
-        text += `第4条 （財産分与）
-${propertyDivision}
+      text += "第4条（面会交流）
+子と同居していない親と子の面会交流については、「" + visitation + "」とする。
 
-`;
+";
+
+      if (property) {
+        text += "第5条（財産分与）
+" + property + "
+
+";
       }
 
-      text += `第5条 （年金分割）
-合意分割の割合を${pensionSplit}とする。
+      text += "第6条（年金分割）
+当事者は、合意分割の請求に関して、按分割合を0.5とすることで合意した。
 
-`;
-      text += `${signDate}
+";
+      text += "第7条（清算条項）
+本協議書に定めるもののほか、甲乙間に債権債務のないことを相互に確認する。
 
-甲 ${signA}
-住所 ${addrA}
+";
+      text += "第8条（届出）
+甲乙は、本協議書に基づき速やかに離婚の届出を行う。
 
-乙 ${signB}
-住所 ${addrB}
-`;
+";
+
+      text += "以上のとおり、甲乙は本協議の成立を証するため、本書を2通作成し、各自署名押印のうえ、各1通を保有する。
+
+";
+
+      text += "作成日：　　　　年　　月　　日
+
+";
+      text += "甲（夫） 住所：　　　　　　　　　　　　　　氏名：" + husband + "　印
+";
+      text += "乙（妻） 住所：　　　　　　　　　　　　　　氏名：" + wife + "　印
+";
 
       document.getElementById("preview").innerText = text;
-    }
-
-    function downloadPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.setFont("Helvetica", "normal");
-      doc.setFontSize(12);
-      const lines = document.getElementById("preview").innerText.split("\n");
-      let y = 20;
-      lines.forEach(line => {
-        doc.text(line, 15, y);
-        y += 8;
-      });
-      doc.save("agreement.pdf");
     }
   </script>
 </body>
