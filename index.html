@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="robots" content="noindex, nofollow">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>離婚協議書 自動作成（PDF安定版）</title>
+  <title>離婚協議書 自動作成（画像PDF版・文字化け対策）</title>
   <style>
     :root { --blue:#2563eb; --gray:#f5f5f5; --text:#111827; }
     body { font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans JP', sans-serif; color:var(--text); margin:0; background:#fff; line-height:1.6;}
@@ -37,7 +37,7 @@
   <div class="container grid grid-2">
     <section class="hero">
       <h1>無料で離婚協議書を自動作成</h1>
-      <div>このページはPDF出力をより安定させたバージョンです（日本語の文字化けを回避）。</div>
+      <div>文字化け対策版：プレビューを画像に変換してからPDFに貼り付けます（日本語フォントの問題を回避）。</div>
       <div class="muted" style="margin-top:8px;">※ 本ツールは自動生成ツールであり、法的助言ではありません。最終確認は弁護士にご相談ください。</div>
     </section>
 
@@ -174,8 +174,9 @@
     © 弁護士法人〇〇総合法律事務所 / 本ツールは雛形生成です。個別事情により修正が必要です。
   </footer>
 
-  <!-- html2pdf.js (bundles html2canvas + jsPDF) -->
-  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <!-- libs -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script>
     const el = id => document.getElementById(id);
 
@@ -262,18 +263,43 @@
     }
 
     async function toPDF() {
-      // Build fresh text into the preview box (source of PDF)
       updatePreview();
-      const opt = {
-        margin:       10,
-        filename:     '離婚協議書.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      // Convert the preview div (text-based) to PDF
-      const element = document.getElementById('preview');
-      await html2pdf().set(opt).from(element).save();
+      const { jsPDF } = window.jspdf;
+      const previewEl = document.getElementById('preview');
+
+      // Render preview element to canvas (rasterized image)
+      const canvas = await html2canvas(previewEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      // Create A4 PDF and fit image to page width
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const imgWidth = pageWidth - 20; // margins
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+
+      let y = 10;
+      let remainingHeight = imgHeight;
+      let position = 10;
+      let srcY = 0;
+      const sliceHeight = canvas.height * (imgWidth / canvas.width) * (pageHeight - 20) / imgHeight;
+
+      while (remainingHeight > 0) {
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        const slicePixelHeight = Math.min(canvas.height - srcY, Math.round((pageHeight - 20) * canvas.width / imgWidth));
+        sliceCanvas.height = slicePixelHeight;
+        const ctx = sliceCanvas.getContext('2d');
+        ctx.drawImage(canvas, 0, srcY, canvas.width, slicePixelHeight, 0, 0, canvas.width, slicePixelHeight);
+        const sliceImg = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(sliceImg, 'JPEG', 10, 10, imgWidth, (slicePixelHeight * imgWidth / canvas.width));
+        remainingHeight -= (slicePixelHeight * imgWidth / canvas.width);
+        srcY += slicePixelHeight;
+        if (remainingHeight > 0) pdf.addPage();
+      }
+
+      pdf.save('離婚協議書.pdf');
     }
 
     // UI bindings
