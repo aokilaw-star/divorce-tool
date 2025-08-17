@@ -30,6 +30,7 @@
     label { display: block; font-size: 13px; margin: 8px 0 4px; color: #334155; }
     input, select, textarea { width: 100%; padding: 10px 12px; font-size: 14px; border: 1px solid #d4d8e8; border-radius: 12px; background: #fff; outline: none; }
     input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(47,93,168,.15); }
+    textarea { min-height: 72px; }
     .cols { display: grid; gap: 14px; }
     @media (min-width: 960px) { .cols { grid-template-columns: 1fr 1fr; } }
     .muted { color: var(--muted); font-size: 12px; }
@@ -53,6 +54,7 @@
     .addrline { display:block; min-width:20em; border-bottom:1.5px dotted #94a3b8; }
     .datebox { margin-top: 16px; margin-bottom: 8px; }
 
+    .preview-wrap { display:none; } /* default hidden */
     @media print {
       header, .wrap .card:not(#toolCard) { display:none !important; }
       body { background: #fff; }
@@ -154,8 +156,22 @@
           </div>
 
           <h3 style="margin:14px 0 6px;font-size:15px;color:#1f2937">金銭・その他</h3>
-          <label>財産分与（任意）</label>
-          <input id="division" placeholder="例：乙は甲に金◯◯万円を令和◯年◯月末日限りで支払う">
+          <label>財産分与（任意・自由記載）</label>
+          <textarea id="division" placeholder="例：乙は甲に金◯◯万円を令和◯年◯月末日限りで支払う"></textarea>
+
+          <label>慰謝料（任意・自由記載）</label>
+          <textarea id="damages" placeholder="例：甲は乙に対し、解決金として金◯◯万円を令和◯年◯月末日限りで支払う"></textarea>
+
+          <label>その他特約（任意・自由記載）</label>
+          <textarea id="others" placeholder="例：転居に伴う学用品等の費用負担については当事者間で誠実に協議する 等"></textarea>
+
+          <h3 style="margin:16px 0 6px;font-size:15px;color:#1f2937">年金分割</h3>
+          <label>年金分割の条項を入れる</label>
+          <select id="pensionInclude">
+            <option value="no" selected>入れない</option>
+            <option value="yes">入れる</option>
+          </select>
+          <div class="muted">※ 入れるを選ぶと、条項は次の文言になります：「甲は乙に対し、甲乙の婚姻期間中における双方の年金分割の割合を0.5とすることに合意し、その年金分割に必要な手続に協力することを約束する。」</div>
 
           <div class="btnline" style="margin-top:12px">
             <button type="button" id="btnPreview" class="btn">プレビュー</button>
@@ -163,10 +179,8 @@
           </div>
         </form>
 
-        <section>
-          <div id="preview" class="doc" aria-live="polite">
-            <div class="muted">ここに協議書のプレビューが表示されます。</div>
-          </div>
+        <section class="preview-wrap" id="previewWrap">
+          <div id="preview" class="doc" aria-live="polite"></div>
         </section>
       </div>
     </section>
@@ -278,6 +292,9 @@
     }
 
     function render(){
+      // show preview container on first render
+      el('previewWrap').style.display = '';
+
       const aName = el('aName').value.trim() || '（甲の氏名）';
       const bName = el('bName').value.trim() || '（乙の氏名）';
       const submitter = el('submitter').value;
@@ -287,11 +304,14 @@
       const specialCost = el('specialCost').value === 'yes';
       const vMode = el('visitationMode').value;
       const division = el('division').value.trim();
+      const damages = el('damages').value.trim();
+      const others = el('others').value.trim();
+      const pensionOn = el('pensionInclude').value === 'yes';
 
       let html = `<h1 class="title">離婚協議書</h1>`;
       html += `<p class="lead">${aName}（以下、「甲」という。）と ${bName}（以下、「乙」という。）は、双方の協議離婚にあたり、次のとおり合意した。</p>`;
 
-      // 第1条 合意・親権・届出者（条内に明記）
+      // 第1条 合意・親権・届出者
       if(children.length>0){
         const custodyList = children.map(c => `${c.rel?c.rel+' ':''}${c.name}の親権者を${c.custody}とする。`).join('');
         html += `<div class="clause"><h3>第1条（合意および親権）</h3>
@@ -333,16 +353,24 @@
         html += `<div class="clause"><h3>第3条（面会交流）</h3>${buildVisitation(vMode)}</div>`;
       }
 
-      // 財産分与（任意）
-      if(division){
-        html += `<div class="clause"><h3>第4条（財産分与）</h3><p>${division}</p></div>`;
+      // 金銭（財産分与・慰謝料・その他特約）
+      let moneyClauses = '';
+      if(division) moneyClauses += `<p>（財産分与）${division}</p>`;
+      if(damages) moneyClauses += `<p>（慰謝料）${damages}</p>`;
+      if(others)  moneyClauses += `<p>（その他）${others}</p>`;
+      if(moneyClauses){
+        html += `<div class="clause"><h3>第4条（金銭その他）</h3>${moneyClauses}</div>`;
       }
 
-      // 年金分割 0.5
-      html += `<div class="clause"><h3>第5条（年金分割）</h3><p>甲乙は、厚生年金の年金分割につき、按分割合を0.5とすることに合意する。</p></div>`;
-
-      // 清算条項
-      html += `<div class="clause"><h3>第6条（清算条項）</h3><p>甲及び乙は、本件離婚に関し、本書に定めるほか、相互に何らの金銭その他の請求をしないことを確認する。</p></div>`;
+      // 年金分割（選択式）
+      if(pensionOn){
+        html += `<div class="clause"><h3>第5条（年金分割）</h3><p>甲は乙に対し、甲乙の婚姻期間中における双方の年金分割の割合を0.5とすることに合意し、その年金分割に必要な手続に協力することを約束する。</p></div>`;
+        // 清算条項は次条（第6条）
+        html += `<div class="clause"><h3>第6条（清算条項）</h3><p>甲及び乙は、本件離婚に関し、本書に定めるほか、相互に何らの金銭その他の請求をしないことを確認する。</p></div>`;
+      } else {
+        // 年金分割なしの場合は清算条項を第5条へ
+        html += `<div class="clause"><h3>第5条（清算条項）</h3><p>甲及び乙は、本件離婚に関し、本書に定めるほか、相互に何らの金銭その他の請求をしないことを確認する。</p></div>`;
+      }
 
       // 署名・日付・住所（手書き）
       html += `<div class="signature">
@@ -379,13 +407,16 @@
       });
 
       // buttons
-      el('btnPreview').addEventListener('click', render);
-      el('btnPreviewTop').addEventListener('click', render);
+      const doPreview = ()=>{ render(); window.scrollTo({top: document.getElementById('previewWrap').offsetTop - 70, behavior: 'smooth'}); };
+      el('btnPreview').addEventListener('click', doPreview);
+      el('btnPreviewTop').addEventListener('click', doPreview);
 
       async function makePdf(){
         render();
         const { jsPDF } = window.jspdf;
         const docEl = el('preview');
+        // ensure visible for canvas
+        el('previewWrap').style.display = '';
         const canvas = await html2canvas(docEl, {scale:2, useCORS:true});
         const pdf = new jsPDF({unit:'mm', format:'a4'});
         const pageWidth = 210; const pageHeight = 297;
@@ -417,8 +448,6 @@
 
       el('btnPdf').addEventListener('click', makePdf);
       el('btnPdfTop').addEventListener('click', makePdf);
-
-      render();
     }
 
     document.addEventListener('DOMContentLoaded', init);
