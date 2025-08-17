@@ -3,145 +3,147 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>離婚協議書作成ツール</title>
+  <title>離婚協議書ジェネレーター</title>
   <style>
-    body { font-family: 'Yu Gothic', sans-serif; margin: 20px; line-height: 1.8; }
+    body { font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif; margin: 20px; }
     h1 { color: #2c3e50; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    textarea, input, select { width: 100%; padding: 8px; margin-top: 4px; }
-    button { margin-top: 15px; padding: 10px 20px; background: #2c3e50; color: #fff; border: none; cursor: pointer; }
-    button:hover { background: #34495e; }
-    #preview { margin-top: 30px; padding: 20px; border: 1px solid #ccc; white-space: pre-wrap; }
+    label { display: block; margin-top: 10px; }
+    textarea, input, select { width: 100%; margin-top: 5px; padding: 5px; }
+    button { margin-top: 15px; padding: 10px 20px; background: #3498db; color: #fff; border: none; cursor: pointer; border-radius: 4px; }
+    #preview { border: 1px solid #ccc; padding: 20px; margin-top: 20px; white-space: pre-wrap; }
+    .section-title { margin-top: 30px; font-weight: bold; font-size: 1.2em; }
   </style>
 </head>
 <body>
-  <h1>離婚協議書作成ツール</h1>
-  <p>必要事項を入力すると、離婚協議書の案文が生成されます。署名・日付・住所欄は印刷後に手書きで記入してください。</p>
+  <h1>離婚協議書ジェネレーター</h1>
+  <p>必要事項を入力して「プレビュー」を押してください。最後にPDFを生成できます。<br>
+  ※署名・住所・日付は印刷後に手書きしてください。</p>
 
-  <form id="agreementForm">
-    <label>夫の氏名</label>
-    <input type="text" id="husbandName" required>
+  <label>夫の氏名</label>
+  <input type="text" id="husbandName">
 
-    <label>妻の氏名</label>
-    <input type="text" id="wifeName" required>
+  <label>妻の氏名</label>
+  <input type="text" id="wifeName">
 
-    <label>子どもの人数</label>
-    <select id="childCount">
-      <option value="0">なし</option>
-      <option value="1">1人</option>
-      <option value="2">2人</option>
-      <option value="3">3人</option>
-    </select>
+  <label>子どもの人数</label>
+  <input type="number" id="childrenCount" value="1" min="1" max="5">
 
-    <label>子どもの氏名（カンマ区切りで入力してください）</label>
-    <input type="text" id="childrenNames">
+  <label>子どもの氏名（カンマ区切り）</label>
+  <input type="text" id="childrenNames" placeholder="例：太郎, 花子">
 
-    <label>親権者</label>
-    <select id="custody">
-      <option value="夫">夫</option>
-      <option value="妻">妻</option>
-    </select>
+  <label>親権者</label>
+  <select id="custody">
+    <option value="夫">夫</option>
+    <option value="妻">妻</option>
+  </select>
 
-    <label>養育費（月額・円）</label>
-    <input type="number" id="supportAmount">
+  <label>養育費（月額）</label>
+  <input type="text" id="supportAmount" placeholder="例：5万円">
 
-    <label>支払日</label>
-    <select id="payDay">
-      <option value="毎月末日">毎月末日</option>
-      <option value="毎月○日">毎月○日</option>
-    </select>
+  <label>支払日</label>
+  <select id="paymentDay">
+    <option value="毎月末日">毎月末日</option>
+    <option value="毎月◯日">毎月◯日</option>
+  </select>
 
-    <label>面会交流</label>
-    <select id="visitation">
-      <option value="未定（協議して定める）">未定（協議して定める）</option>
-      <option value="月1回、宿泊なしで実施">月1回、宿泊なしで実施</option>
-    </select>
+  <label>面会交流</label>
+  <select id="visitation">
+    <option value="協議して定める">協議して定める</option>
+    <option value="月1回、土曜日午前10時から午後5時まで、妻宅近くで受渡し">具体的に定める</option>
+  </select>
 
-    <label>財産分与（自由記載）</label>
-    <textarea id="propertyDivision"></textarea>
+  <label>財産分与の有無</label>
+  <select id="propertyDivision">
+    <option value="しない">しない</option>
+    <option value="する">する</option>
+  </select>
 
-    <button type="button" onclick="generateAgreement()">協議書を作成</button>
-  </form>
+  <label>特別費用の定め</label>
+  <select id="extraExpense">
+    <option value="定めない">定めない</option>
+    <option value="定める">定める</option>
+  </select>
+
+  <button onclick="generatePreview()">プレビュー</button>
+  <button onclick="downloadPDF()">PDFダウンロード</button>
 
   <div id="preview"></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    function generateAgreement() {
-      const husband = document.getElementById("husbandName").value;
-      const wife = document.getElementById("wifeName").value;
-      const childCount = parseInt(document.getElementById("childCount").value);
-      const childrenNames = document.getElementById("childrenNames").value.split("、").join(", ");
-      const custody = document.getElementById("custody").value;
-      const support = document.getElementById("supportAmount").value;
-      const payDay = document.getElementById("payDay").value;
-      const visitation = document.getElementById("visitation").value;
-      const property = document.getElementById("propertyDivision").value;
+    function generatePreview() {
+      const husband = document.getElementById('husbandName').value;
+      const wife = document.getElementById('wifeName').value;
+      const childrenCount = document.getElementById('childrenCount').value;
+      const childrenNames = document.getElementById('childrenNames').value.split(',');
+      const custody = document.getElementById('custody').value;
+      const support = document.getElementById('supportAmount').value;
+      const paymentDay = document.getElementById('paymentDay').value;
+      const visitation = document.getElementById('visitation').value;
+      const property = document.getElementById('propertyDivision').value;
+      const extra = document.getElementById('extraExpense').value;
 
       let text = "離婚協議書
 
 ";
-
       text += "第1条（離婚の合意）
-甲（夫 " + husband + "）と乙（妻 " + wife + "）は、協議離婚することに合意した。
+夫" + husband + "と妻" + wife + "は協議離婚する。
+
+";
+      
+      text += "第2条（親権者）
+未成年の子の親権者は" + custody + "とする。
 
 ";
 
-      if (childCount > 0) {
-        text += "第2条（親権者）
-";
-        text += "未成年の子 ";
-        text += childrenNames + " の親権者は " + custody + " とする。
+      text += "第3条（養育費）
+親権者でない一方は、養育費として毎月 " + support + " を " + paymentDay + " に振り込む。振込手数料は支払者負担とする。
 
 ";
-      }
-
-      if (support) {
-        text += "第3条（養育費）
-";
-        text += custody === "夫" ? "乙" : "甲";
-        text += "は、子の監護費用として、毎月 " + support + " 円を " + payDay + " までに支払う。振込手数料は支払者の負担とする。
-
-";
-      }
 
       text += "第4条（面会交流）
-子と同居していない親と子の面会交流については、「" + visitation + "」とする。
+子との面会交流については、" + visitation + "。
 
 ";
 
-      if (property) {
-        text += "第5条（財産分与）
-" + property + "
+      text += "第5条（財産分与）
+双方は財産分与について " + property + " 。
+
+";
+
+      text += "第6条（年金分割）
+厚生年金の分割割合は0.5とする。
+
+";
+
+      if(extra === "定める") {
+        text += "第7条（特別費用）
+子の進学・医療など特別の費用は協議して分担する。
+
+";
+        text += "第8条（清算条項）
+双方は本契約に定めるほか債権債務がないことを確認する。
+
+";
+      } else {
+        text += "第7条（清算条項）
+双方は本契約に定めるほか債権債務がないことを確認する。
 
 ";
       }
 
-      text += "第6条（年金分割）
-当事者は、合意分割の請求に関して、按分割合を0.5とすることで合意した。
+      text += "\n【署名欄】\n夫 住所：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿\n   氏名：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿ 印\n\n妻 住所：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿\n   氏名：＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿ 印\n\n日付：＿＿年＿＿月＿＿日\n";
 
-";
-      text += "第7条（清算条項）
-本協議書に定めるもののほか、甲乙間に債権債務のないことを相互に確認する。
+      document.getElementById('preview').textContent = text;
+    }
 
-";
-      text += "第8条（届出）
-甲乙は、本協議書に基づき速やかに離婚の届出を行う。
-
-";
-
-      text += "以上のとおり、甲乙は本協議の成立を証するため、本書を2通作成し、各自署名押印のうえ、各1通を保有する。
-
-";
-
-      text += "作成日：　　　　年　　月　　日
-
-";
-      text += "甲（夫） 住所：　　　　　　　　　　　　　　氏名：" + husband + "　印
-";
-      text += "乙（妻） 住所：　　　　　　　　　　　　　　氏名：" + wife + "　印
-";
-
-      document.getElementById("preview").innerText = text;
+    function downloadPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const text = document.getElementById('preview').textContent;
+      const lines = doc.splitTextToSize(text, 180);
+      doc.text(lines, 10, 20);
+      doc.save("rikon_agreement.pdf");
     }
   </script>
 </body>
